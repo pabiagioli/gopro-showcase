@@ -14,28 +14,77 @@ import java.util.concurrent.TimeUnit
  */
 class GoProCommandsUnitTest {
 
+    val okHttpClient: OkHttpClient by lazy {
+        OkHttpClient().newBuilder()
+            .connectTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build()!!
+    }
+
+    val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl("http://10.5.5.9/gp/gpControl/")
+            .client(okHttpClient)
+            .build()!!
+    }
+
     @Test
-    fun testGoProPair(){
+    fun testGoProInfo(){
         val ssid = "aajGoPro"
         val pass = "44JT3ch01"
-        val okHttpClient = OkHttpClient().newBuilder()
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .build()
-        val retrofit = Retrofit.Builder()
-                .baseUrl("http://10.5.5.9/gp/gpControl/")
-                .client(okHttpClient)
-                .build()
-        val service = retrofit.create(GoProPairService::class.java)
-        val pairReq = service.pairCommand(ssid,pass)
-        val response = pairReq.execute()
-        println(response.body().string())
+        val service = retrofit.create(GoProInfoService::class.java)
+
+        //Requests
+        val nameCmdReq = service.nameCmd(ssid,pass)
+        val statusReq = service.status()
+
+        //Responses
+        val responsePair = nameCmdReq.execute()
+        val responseStatus = statusReq.execute()
+
+
+        assert(responsePair.isSuccessful)
+        println(responsePair.body().string())
+
+        assert(responseStatus.isSuccessful)
+        println(responseStatus.body().string())
+    }
+
+    @Test
+    fun testGetAnalytics(){
+        val service = retrofit.create(GoProAnalyticsService::class.java)
+        assert(service.analytics().execute().isSuccessful)
+        /*.enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                assert(response != null)
+                if(response != null)
+                    assert(response.isSuccessful)
+            }
+
+            override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                assert(false)
+            }
+        })*/
     }
 }
 
-interface GoProPairService {
-    @GET("command/wireless/ap/ssid")
-    fun pairCommand(@Query("ssid")ssid:String, @Query("pw")pass:String): Call<ResponseBody>
 
+
+interface GoProInfoService {
+
+    @GET("status")
+    fun status():Call<ResponseBody>
+
+    @GET("command/wireless/ap/ssid")
+    fun nameCmd(@Query("ssid")ssid:String, @Query("pw")pass:String): Call<ResponseBody>
+
+}
+
+interface GoProAnalyticsService {
+    /**
+     * Acquire the analytics file as an octet-stream.
+     */
+    @GET("analytics/get")
+    fun analytics():Call<ResponseBody>
 }
