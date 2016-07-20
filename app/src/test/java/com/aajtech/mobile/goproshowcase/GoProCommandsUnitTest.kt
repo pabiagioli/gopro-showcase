@@ -72,23 +72,35 @@ class GoProCommandsUnitTest {
 
         val service = retrofit.create(GoProInfoService::class.java)
 
-        //Requests
-        //val nameCmdReq = service.nameCmd(ssid,pass)
-        val statusReq = service.status()
+        //Requests/Responses
+        //I'm using execute, since it's really hard to Test an Async Method
+        //TODO: how do I plug JUnit to bg Thread???
+        var responseStatus = service.status().execute()
+        var retryCount = 1;
+        val totalRetries = 4;
 
-        //Responses
-        //val responsePair = nameCmdReq.execute()
-        val responseStatus = statusReq.execute()
-
-
-        //assert(responsePair.isSuccessful)
-        //println(responsePair.body().string())
+        //I may have to retry the request a couple of times until the camera is fully initialized
+        if(responseStatus.code() == 500){
+            do {
+                println("First attempt failed!\nAttempting retry #$retryCount")
+                responseStatus = service.status().execute()
+                retryCount++
+            } while (responseStatus.code() != 200 && (retryCount < totalRetries))
+        }
+        val responseBody = responseStatus.body()
 
         assert(responseStatus.isSuccessful)
-        println(responseStatus.body().toString())
-        val batLvlK = GoProConstants.status[GoProConstants.batteryLevel]!!
-        val batLvl = responseStatus.body()["status"]!![batLvlK]
-        println("Battery Level $batLvlK : $batLvl")
+        println(responseBody.toString())
+
+
+        val batteryPercentage = responseBody.batteryLvlPercentage()
+        for ((property,id) in GoProConstants.status){
+            val propValue =responseBody.status[id];
+            println("$property = $propValue")
+        }
+        println("Battery Level [0..3]: $batteryPercentage%")
+
+        //assert(service.powerOff().execute().isSuccessful)
     }
 
     @Test
@@ -109,6 +121,23 @@ class GoProCommandsUnitTest {
                 assert(false)
             }
         })*/
+    }
+}
+data class GoProStatusResponse(val status:Map<Int,Any>, val settings:Map<Int,Any>){
+
+    /**
+     * Returns the battery level percentage
+     * The Battery Level is between [0..3],
+     * The value is rounded up from its first digit from the left.
+     */
+    fun batteryLvlPercentage(): Long{
+        val batLvlK = GoProConstants.status[GoProConstants.batteryLevel]!!
+        val batLvl = status[batLvlK]
+        val result = when(batLvl){
+            is String -> Math.round(batLvl.toDouble() *10/3) * 10
+            else -> Math.round(batLvl.toString().toDouble() *10/3) * 10
+        }
+        return result;
     }
 }
 
@@ -176,7 +205,10 @@ interface GoProInfoService {
      * get Status codes
      */
     @GET("status")
-    fun status():Call<Map<String,Map<Int,Any>>>
+    fun status():Call<GoProStatusResponse>
+
+    @GET("command/system/sleep")
+    fun powerOff():Call<Any>
 
     @GET("command/wireless/ap/ssid")
     fun nameCmd(@Query("ssid")ssid:String, @Query("pw")pass:String): Call<ResponseBody>
