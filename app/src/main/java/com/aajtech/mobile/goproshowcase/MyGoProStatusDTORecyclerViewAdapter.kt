@@ -6,12 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.aajtech.mobile.goproshowcase.dto.GoProStatusDTO
-import com.aajtech.mobile.goproshowcase.dummy.DummyContent
 
 /**
- * [RecyclerView.Adapter] that can display a [DummyItem] and makes a call to the
+ * [RecyclerView.Adapter] that can display a [GoProStatusDTO] and makes a call to the
  * specified [OnListFragmentInteractionListener].
- * TODO: Replace the implementation with code for your data type.
  */
 class MyGoProStatusDTORecyclerViewAdapter(private val mValues: List<GoProStatusDTO>, private val mListener: GoProStatusDTOFragment.OnListFragmentInteractionListener?) : RecyclerView.Adapter<MyGoProStatusDTORecyclerViewAdapter.ViewHolder>() {
 

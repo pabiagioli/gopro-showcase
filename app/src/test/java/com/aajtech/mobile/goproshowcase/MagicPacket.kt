@@ -1,12 +1,7 @@
 package com.aajtech.mobile.goproshowcase
 
 import java.io.IOException
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
-import java.net.SocketException
-import java.net.UnknownHostException
-import java.util.regex.Matcher
+import java.net.*
 import java.util.regex.Pattern
 
 /**

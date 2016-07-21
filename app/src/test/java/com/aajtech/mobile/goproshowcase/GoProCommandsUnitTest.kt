@@ -8,6 +8,7 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
 
@@ -18,10 +19,10 @@ class GoProCommandsUnitTest {
 
     val okHttpClient: OkHttpClient by lazy {
         OkHttpClient().newBuilder()
-            .connectTimeout(120, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
-            .build()!!
+                .connectTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build()!!
     }
 
     val moshi: Moshi by lazy { Moshi.Builder().build()!! }
@@ -35,17 +36,16 @@ class GoProCommandsUnitTest {
     }
 
     @Test
-    fun testWoL(){
+    fun testWoL() {
         val macStr = "F4DD9E0DE0F7"
         val ipStr = "10.5.5.9"
-        try	{
+        try {
             val macStr1 = MagicPacket.cleanMac(macStr)
-            println("Sending to: "+macStr)
+            println("Sending to: " + macStr)
             MagicPacket.send(macStr1, ipStr)
-        }
-        catch(e:IllegalArgumentException) {
+        } catch(e: IllegalArgumentException) {
             e.printStackTrace()
-        }catch(e:Exception) {
+        } catch(e: Exception) {
             System.out.println("Failed to send Wake-on-LAN packet:" + e.message)
         }
     }
@@ -64,7 +64,7 @@ class GoProCommandsUnitTest {
      * }
      */
     @Test()
-    fun testGoProInfo(){
+    fun testGoProInfo() {
         val ssid = "aajGoPro"
         val pass = "44JT3ch01"
 
@@ -80,7 +80,7 @@ class GoProCommandsUnitTest {
         val totalRetries = 4;
 
         //I may have to retry the request a couple of times until the camera is fully initialized
-        if(responseStatus.code() == 500){
+        if (responseStatus.code() == 500) {
             do {
                 println("First attempt failed!\nAttempting retry #$retryCount")
                 responseStatus = service.status().execute()
@@ -94,8 +94,8 @@ class GoProCommandsUnitTest {
 
 
         val batteryPercentage = responseBody.batteryLvlPercentage()
-        for ((property,id) in GoProConstants.status){
-            val propValue =responseBody.status[id];
+        for ((property, id) in GoProConstants.status) {
+            val propValue = responseBody.status[id];
             println("$property = $propValue")
         }
         println("Battery Level [0..3]: $batteryPercentage%")
@@ -104,12 +104,19 @@ class GoProCommandsUnitTest {
     }
 
     @Test
-    fun testGetAnalytics(){
+    fun testGetAnalytics() {
 
         testWoL()
 
         val service = retrofit.create(GoProAnalyticsService::class.java)
-        assert(service.analytics().execute().isSuccessful)
+        var response = service.analytics().execute()
+        if (!response.isSuccessful && response.code() == 500) {
+            response = service.analytics().execute()
+        }
+        assert(response.isSuccessful)
+        //println("Analytics File toString()"+response.body().byteStream())
+        println("Analytics File Content-Type " + response.body().contentType()?.type())
+        println("Analytics File String(byteArray)" + String(response.body().bytes()))
         /*.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
                 assert(response != null)
@@ -123,19 +130,20 @@ class GoProCommandsUnitTest {
         })*/
     }
 }
-data class GoProStatusResponse(val status:Map<Int,Any>, val settings:Map<Int,Any>){
+
+data class GoProStatusResponse(val status: Map<Int, Any>, val settings: Map<Int, Any>) {
 
     /**
      * Returns the battery level percentage
      * The Battery Level is between [0..3],
      * The value is rounded up from its first digit from the left.
      */
-    fun batteryLvlPercentage(): Long{
+    fun batteryLvlPercentage(): Long {
         val batLvlK = GoProConstants.status[GoProConstants.batteryLevel]!!
         val batLvl = status[batLvlK]
-        val result = when(batLvl){
-            is String -> Math.round(batLvl.toDouble() *10/3) * 10
-            else -> Math.round(batLvl.toString().toDouble() *10/3) * 10
+        val result = when (batLvl) {
+            is String -> Math.round(batLvl.toDouble() * 10 / 3) * 10
+            else -> Math.round(batLvl.toString().toDouble() * 10 / 3) * 10
         }
         return result;
     }
@@ -205,13 +213,13 @@ interface GoProInfoService {
      * get Status codes
      */
     @GET("status")
-    fun status():Call<GoProStatusResponse>
+    fun status(): Call<GoProStatusResponse>
 
     @GET("command/system/sleep")
-    fun powerOff():Call<Any>
+    fun powerOff(): Call<Any>
 
     @GET("command/wireless/ap/ssid")
-    fun nameCmd(@Query("ssid")ssid:String, @Query("pw")pass:String): Call<ResponseBody>
+    fun nameCmd(@Query("ssid") ssid: String, @Query("pw") pass: String): Call<ResponseBody>
 
 }
 
@@ -219,7 +227,8 @@ interface GoProAnalyticsService {
     /**
      * Acquire the analytics file as an octet-stream.
      */
+    @Headers("Content-Type: application/octet-stream")
     @GET("analytics/get")
-    fun analytics():Call<ResponseBody>
+    fun analytics(): Call<ResponseBody>
 }
 

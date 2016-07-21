@@ -80,8 +80,8 @@ object MagicPacket {
     }
 
     @Throws(IllegalArgumentException::class)
-    private fun validateMac(mac: String): Array<String> {
-        var mac = mac
+    private fun validateMac(macAddress: String): Array<String> {
+        var mac = macAddress
         // error handle semi colons
         mac = mac.replace(";", ":")
 

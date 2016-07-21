@@ -35,18 +35,17 @@ val retrofit: Retrofit by lazy {
 val GoProFixedIPAddress = "10.5.5.9"
 val GoProMACaddress = "F4DD9E0DE0F7"
 
-fun sendWoL(ip:String = GoProFixedIPAddress, mac:String = GoProMACaddress){
+fun sendWoL(ip: String = GoProFixedIPAddress, mac: String = GoProMACaddress) {
     val macStr = mac
     val ipStr = ip
 
-    try	{
+    try {
         val macStr1 = MagicPacket.cleanMac(macStr)
-        println("Sending to: "+macStr)
+        println("Sending to: " + macStr)
         MagicPacket.send(macStr1, ipStr)
-    }
-    catch(e:IllegalArgumentException) {
+    } catch(e: IllegalArgumentException) {
         e.printStackTrace()
-    }catch(e:Exception) {
+    } catch(e: Exception) {
         System.out.println("Failed to send Wake-on-LAN packet:" + e.message)
     }
 }
@@ -63,7 +62,7 @@ interface GoProInfoService {
     fun powerOff(): Call<Any>
 
     @GET("command/wireless/ap/ssid")
-    fun nameCmd(@Query("ssid")ssid:String, @Query("pw")pass:String): Call<ResponseBody>
+    fun nameCmd(@Query("ssid") ssid: String, @Query("pw") pass: String): Call<ResponseBody>
 
 }
 

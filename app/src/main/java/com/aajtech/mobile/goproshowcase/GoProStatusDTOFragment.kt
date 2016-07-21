@@ -3,7 +3,6 @@ package com.aajtech.mobile.goproshowcase
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
@@ -14,19 +13,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.aajtech.mobile.goproshowcase.GoProStatusDTOFragment.OnListFragmentInteractionListener
 import com.aajtech.mobile.goproshowcase.dto.GoProStatusDTO
-import com.aajtech.mobile.goproshowcase.dto.GoProStatusResponse
 import com.aajtech.mobile.goproshowcase.dto.buildViewHolderData
-
-import com.aajtech.mobile.goproshowcase.dummy.DummyContent
-import com.aajtech.mobile.goproshowcase.dummy.DummyContent.DummyItem
 import com.aajtech.mobile.goproshowcase.service.GoProInfoService
-import com.aajtech.mobile.goproshowcase.service.MagicPacket
 import com.aajtech.mobile.goproshowcase.service.retrofit
 import com.aajtech.mobile.goproshowcase.service.sendWoL
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.net.SocketTimeoutException
 import kotlin.concurrent.thread
 
@@ -71,18 +63,18 @@ class GoProStatusDTOFragment : Fragment() {
                 if (ActivityCompat.checkSelfPermission(this@GoProStatusDTOFragment.activity, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED &&
                         ActivityCompat.checkSelfPermission(this@GoProStatusDTOFragment.activity, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
 
-                    ActivityCompat.requestPermissions(this@GoProStatusDTOFragment.activity, arrayOf(Manifest.permission.INTERNET),200)
+                    ActivityCompat.requestPermissions(this@GoProStatusDTOFragment.activity, arrayOf(Manifest.permission.INTERNET), 200)
                     return@thread
                 }
                 sendWoL()
-                Log.d(this.tag,"before WoL")
-                Log.d(this.tag,"before WS")
+                Log.d(this.tag, "before WoL")
+                Log.d(this.tag, "before WS")
                 try {
                     var retryCount = 1
                     val totalRetries = 4
                     var response = statusService.status().execute()
                     //I may have to retry the request a couple of times until the camera is fully initialized
-                    if(response.code() == 500){
+                    if (response.code() == 500) {
                         do {
                             println("First attempt failed!\nAttempting retry #$retryCount")
                             response = statusService.status().execute()
@@ -97,9 +89,9 @@ class GoProStatusDTOFragment : Fragment() {
                             view.adapter.notifyDataSetChanged()
                         }
                     }
-                }catch (ste:SocketTimeoutException){
+                } catch (ste: SocketTimeoutException) {
                     ste.printStackTrace()
-                }finally {
+                } finally {
 
                 }
                 statusService.powerOff()
