@@ -129,6 +129,34 @@ class GoProCommandsUnitTest {
             }
         })*/
     }
+
+    @Test
+    fun testGoProTakeSinglePhoto() {
+        testWoL()
+        val primaryMode = retrofit.create(GoProPrimaryModeService::class.java)
+        var response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
+
+        if (!response.isSuccessful && response.code() == 500)
+            response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
+
+        assert(response.isSuccessful)
+        println(response.body().string())
+        val secondaryMode = retrofit.create(GoProSecondaryModeService::class.java)
+        val response2 = secondaryMode.setSubMode(
+                GoProSecondaryModes.SINGLE_PHOTO.mode,
+                GoProSecondaryModes.SINGLE_PHOTO.subMode).execute()
+        assert(response2.isSuccessful)
+        println(response2.body().string())
+
+        val trigger = retrofit.create(GoProShutterService::class.java)
+        val response3 = trigger.shutterToggle(GoProShutterModes.TRIGGER_SHUTTER.mode).execute()
+
+        assert(response3.isSuccessful)
+        println(response3.body().string())
+
+    }
+
+
 }
 
 data class GoProStatusResponse(val status: Map<Int, Any>, val settings: Map<Int, Any>) {
@@ -207,6 +235,30 @@ object GoProConstants {
         )
 }
 
+enum class GoProPrimaryModes(val mode: Int) {
+    VIDEO(0),
+    PHOTO(1),
+    MULTI_SHOT(2)
+}
+
+enum class GoProSecondaryModes(val mode: Int, val subMode: Int) {
+    VIDEO_VIDEO(0, 0),
+    TIME_LAPSE_VIDEO(0, 1),
+    VIDEO_PLUS_PHOTO(0, 2),
+    LOOPING_VIDEO(0, 3),
+    SINGLE_PHOTO(1, 0),
+    CONTINUOUS_PHOTO(1, 1),
+    NIGHT_PHOTO(1, 2),
+    BURST_MULTI_SHOT(2, 0),
+    TIME_LAPSE_MULTI_SHOT(2, 1),
+    NIGHT_LAPSE_MULTI_SHOT(2, 2)
+}
+
+enum class GoProShutterModes(val mode: Int) {
+    TRIGGER_SHUTTER(1),
+    STOP_SHUTTER(0)
+}
+
 interface GoProInfoService {
 
     /**
@@ -231,4 +283,37 @@ interface GoProAnalyticsService {
     @GET("analytics/get")
     fun analytics(): Call<ResponseBody>
 }
+
+interface GoProPrimaryModeService {
+    @GET("command/mode")
+    fun setPrimaryMode(@Query("p") mode: Int): Call<ResponseBody>
+}
+
+interface GoProSecondaryModeService {
+    @GET("command/sub_mode")
+    fun setSubMode(@Query("mode") mode: Int, @Query("sub_mode") subMode: Int): Call<ResponseBody>
+}
+
+interface GoProShutterService {
+    /**
+     * Trigger command
+     */
+    @GET("command/shutter")
+    fun shutterToggle(@Query("p") toggle: Int): Call<ResponseBody>
+}
+
+enum class GoProStreamingModes(val param1: String, val command: String) {
+    START_STREAMING("gpStream", "restart"),
+    STOP_STREAMING("gpStream", "stop")
+}
+
+interface GoProLiveStreaming {
+
+    /**
+     * Toggle real-time A/V stream using LTP
+     */
+    @GET("execute?p1=gpStream&c1=restart")
+    fun toggleLiveStreamingLTP(@Query("p1") param1: String, @Query("c1") command: String)
+}
+
 

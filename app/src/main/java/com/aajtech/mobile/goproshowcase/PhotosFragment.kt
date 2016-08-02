@@ -4,26 +4,27 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.aajtech.mobile.goproshowcase.service.GoProAnalyticsService
-import com.aajtech.mobile.goproshowcase.service.retrofit
-import com.aajtech.mobile.goproshowcase.service.sendWoL
-import kotlinx.android.synthetic.main.fragment_go_pro_analytics.*
-import java.net.SocketTimeoutException
+import com.aajtech.mobile.goproshowcase.dto.GoProPrimaryModes
+import com.aajtech.mobile.goproshowcase.dto.GoProSecondaryModes
+import com.aajtech.mobile.goproshowcase.dto.GoProShutterModes
+import com.aajtech.mobile.goproshowcase.service.*
+import kotlinx.android.synthetic.main.fragment_photos.*
 import kotlin.concurrent.thread
 
 
 /**
  * A simple [Fragment] subclass.
  * Activities that contain this fragment must implement the
- * [GoProAnalyticsFragment.OnFragmentInteractionListener] interface
+ * [PhotosFragment.OnFragmentInteractionListener] interface
  * to handle interaction events.
- * Use the [GoProAnalyticsFragment.newInstance] factory method to
+ * Use the [PhotosFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class GoProAnalyticsFragment : Fragment() {
+class PhotosFragment : Fragment() {
 
     // TODO: Rename and change types of parameters
     private var mParam1: String? = null
@@ -39,45 +40,45 @@ class GoProAnalyticsFragment : Fragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        if (!this.isHidden) {
-            loadingWheel.visibility = View.VISIBLE
-            fileAnalyticsScroll.visibility = View.GONE;
-        }
-        thread {
-            try {
-                sendWoL()
-                val service = retrofit.create(GoProAnalyticsService::class.java)
-                var response = service.analytics().execute()
-                if (!response.isSuccessful && response.code() == 500) {
-                    response = service.analytics().execute()
-                }
-                val parsedRes = String(response.body().bytes())
-                if (!this.isHidden) {
-                    this@GoProAnalyticsFragment.activity.runOnUiThread {
-                        loadingWheel.visibility = View.GONE
-                        fileAnalyticsScroll.visibility = View.VISIBLE
-                        analyticsContent.text = parsedRes
-                    }
-                }
-            } catch (socketEx: SocketTimeoutException) {
-
-            }
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater!!.inflate(R.layout.fragment_go_pro_analytics, container, false)
+        return inflater!!.inflate(R.layout.fragment_photos, container, false)
     }
 
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
         if (mListener != null) {
             mListener!!.onFragmentInteraction(uri)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        photo_manual_trigger.setOnClickListener {
+            thread {
+                sendWoL()
+                val primaryMode = retrofit.create(GoProPrimaryModeService::class.java)
+                var response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
+
+                if (!response.isSuccessful && response.code() == 500)
+                    response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
+
+                //assert(response.isSuccessful)
+                Log.d(this.javaClass.name,response.body().string())
+                val secondaryMode = retrofit.create(GoProSecondaryModeService::class.java)
+                val response2 = secondaryMode.setSubMode(
+                        GoProSecondaryModes.SINGLE_PHOTO.mode,
+                        GoProSecondaryModes.SINGLE_PHOTO.subMode).execute()
+                //assert(response2.isSuccessful)
+                Log.d(this.javaClass.name,response2?.body()?.string())
+
+                val trigger = retrofit.create(GoProShutterService::class.java)
+                val response3 = trigger.shutterToggle(GoProShutterModes.TRIGGER_SHUTTER.mode).execute()
+
+                //assert(response3.isSuccessful)
+                Log.d(this.javaClass.name,response3?.body()?.string())
+            }
         }
     }
 
@@ -123,11 +124,11 @@ class GoProAnalyticsFragment : Fragment() {
          * *
          * @param param2 Parameter 2.
          * *
-         * @return A new instance of fragment GoProAnalyticsFragment.
+         * @return A new instance of fragment PhotosFragment.
          */
         // TODO: Rename and change types and number of parameters
-        fun newInstance(param1: String, param2: String): GoProAnalyticsFragment {
-            val fragment = GoProAnalyticsFragment()
+        fun newInstance(param1: String, param2: String): PhotosFragment {
+            val fragment = PhotosFragment()
             val args = Bundle()
             args.putString(ARG_PARAM1, param1)
             args.putString(ARG_PARAM2, param2)

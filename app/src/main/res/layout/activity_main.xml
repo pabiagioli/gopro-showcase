@@ -18,8 +18,8 @@
         <ImageView
             android:layout_width="100dp"
             android:layout_height="120dp"
-            android:src="@drawable/gopro_postage"
-            android:scaleType="centerInside"/>
+            android:scaleType="centerInside"
+            android:src="@drawable/gopro_postage" />
 
         <TextView
             android:layout_width="match_parent"

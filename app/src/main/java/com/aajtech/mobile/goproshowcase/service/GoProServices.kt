@@ -73,3 +73,21 @@ interface GoProAnalyticsService {
     @GET("analytics/get")
     fun analytics(): Call<ResponseBody>
 }
+
+interface GoProPrimaryModeService {
+    @GET("command/mode")
+    fun setPrimaryMode(@Query("p") mode: Int): Call<ResponseBody>
+}
+
+interface GoProSecondaryModeService {
+    @GET("command/sub_mode")
+    fun setSubMode(@Query("mode") mode: Int, @Query("sub_mode") subMode: Int): Call<ResponseBody>
+}
+
+interface GoProShutterService {
+    /**
+     * Trigger command
+     */
+    @GET("command/shutter")
+    fun shutterToggle(@Query("p") toggle: Int): Call<ResponseBody>
+}

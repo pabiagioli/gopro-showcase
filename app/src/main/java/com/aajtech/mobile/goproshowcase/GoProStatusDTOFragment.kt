@@ -89,13 +89,13 @@ class GoProStatusDTOFragment : Fragment() {
                             view.adapter.notifyDataSetChanged()
                         }
                     }
+                    statusService.powerOff()
+                    Log.d(this@GoProStatusDTOFragment.tag, "successful powerOff")
                 } catch (ste: SocketTimeoutException) {
                     ste.printStackTrace()
                 } finally {
 
                 }
-                statusService.powerOff()
-                Log.d(this@GoProStatusDTOFragment.tag, "successful powerOff")
             }
         }
         return view
