@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/GoProShowCase.iml" filepath="$PROJECT_DIR$/GoProShowCase.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gopro-showcase.iml" filepath="$PROJECT_DIR$/gopro-showcase.iml" />
     </modules>
   </component>
 </project>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GoProShowCase</string>
+    <string name="app_name">GoPro showcase</string>
     <string name="title_activity_go_pro_cmds">Go Pro Commands</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
