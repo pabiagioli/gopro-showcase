@@ -19,7 +19,7 @@
             android:layout_width="100dp"
             android:layout_height="120dp"
             android:src="@drawable/gopro_postage"
-            android:scaleType="fitXY"/>
+            android:scaleType="centerInside"/>
 
         <TextView
             android:layout_width="match_parent"
