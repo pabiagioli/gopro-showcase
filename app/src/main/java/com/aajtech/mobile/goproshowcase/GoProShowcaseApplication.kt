@@ -8,17 +8,19 @@ import com.squareup.leakcanary.RefWatcher
 /**
  * Created by pablo.biagioli on 8/3/16.
  */
-class GoProShowcaseApplication: Application(){
+open class GoProShowcaseApplication: Application(){
 
     lateinit var refWatcher: RefWatcher
-
-    fun getRefWatcher(context: Context): RefWatcher {
-        val application = context.getApplicationContext() as GoProShowcaseApplication
-        return application.refWatcher
-    }
 
     override fun onCreate() {
         super.onCreate()
         refWatcher = LeakCanary.install(this)
+    }
+
+    companion object Factory{
+        fun getRefWatcher (context: Context): RefWatcher {
+            val application = context.getApplicationContext() as GoProShowcaseApplication
+            return application.refWatcher
+        }
     }
 }

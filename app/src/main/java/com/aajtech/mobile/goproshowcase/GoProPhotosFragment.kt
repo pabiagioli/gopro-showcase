@@ -94,6 +94,8 @@ class GoProPhotosFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         sr?.destroy()
+        val refWatcher = GoProShowcaseApplication.getRefWatcher(activity)
+        refWatcher.watch(this)
     }
 
     /**
