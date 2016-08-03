@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.aajtech.mobile.goproshowcase.service.GoProAnalyticsService
 import com.aajtech.mobile.goproshowcase.service.retrofit
+
 import com.aajtech.mobile.goproshowcase.service.sendWoL
 import kotlinx.android.synthetic.main.fragment_go_pro_analytics.*
 import java.net.SocketTimeoutException

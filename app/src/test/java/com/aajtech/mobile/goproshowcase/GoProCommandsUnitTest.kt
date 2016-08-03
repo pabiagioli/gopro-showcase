@@ -1,5 +1,7 @@
 package com.aajtech.mobile.goproshowcase
 
+import android.net.ConnectivityManager
+import android.support.v4.net.ConnectivityManagerCompat
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -155,7 +157,6 @@ class GoProCommandsUnitTest {
         println(response3.body().string())
 
     }
-
 
 }
 

@@ -1,5 +1,7 @@
 package com.aajtech.mobile.goproshowcase.service
 
+import android.net.Network
+import android.util.Log
 import com.aajtech.mobile.goproshowcase.dto.GoProStatusResponse
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient
@@ -14,12 +16,21 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by pablo.biagioli on 7/20/16.
  */
-val okHttpClient: OkHttpClient by lazy {
-    OkHttpClient().newBuilder()
+var wifiNetwork : Network? = null
+
+val okHttpClient: OkHttpClient by lazy  {
+    var builder = OkHttpClient().newBuilder()
             .connectTimeout(120, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
-            .build()!!
+
+            if(wifiNetwork != null) {
+                Log.d("HttpClient Init","Using WIFI socket factory")
+                builder = builder.socketFactory(wifiNetwork?.socketFactory)
+            }else{
+                Log.d("HttpClient Init","couldn't use WIFI socket factory")
+            }
+    builder.build()
 }
 
 val moshi: Moshi by lazy { Moshi.Builder().build()!! }

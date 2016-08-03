@@ -1,5 +1,10 @@
 package com.aajtech.mobile.goproshowcase.service
 
+import android.annotation.TargetApi
+import android.os.Build
+import android.os.ParcelFileDescriptor
+import android.util.Log
+import java.io.FileDescriptor
 import java.io.IOException
 import java.net.*
 import java.util.regex.Pattern
@@ -42,10 +47,62 @@ object MagicPacket {
         val address = InetAddress.getByName(ip)
         val packet = DatagramPacket(bytes, bytes.size, address, port)
         val socket = DatagramSocket()
+        when(Build.VERSION.SDK_INT){
+            Build.VERSION_CODES.LOLLIPOP ->{ bindSocketToWiFiAPI21(socket) }
+            Build.VERSION_CODES.LOLLIPOP_MR1 -> { bindSocketToWiFiAPI22(socket) }
+            Build.VERSION_CODES.M ->{ bindSocketToWiFiAPI23(socket) }
+        }
         socket.send(packet)
         socket.close()
 
         return hex[0] + SEPARATOR + hex[1] + SEPARATOR + hex[2] + SEPARATOR + hex[3] + SEPARATOR + hex[4] + SEPARATOR + hex[5]
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    fun bindSocketToWiFiAPI22(socket: DatagramSocket){
+        wifiNetwork?.bindSocket(socket)
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    fun bindSocketToWiFiAPI23(socket: DatagramSocket){
+        wifiNetwork?.bindSocket(socket)
+    }
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    fun bindSocketToWiFiAPI21(socket: DatagramSocket){
+        //wifiNetwork?.bindSocket(socket)
+        val networkUtils = Class.forName("android.net.NetworkUtils")
+        val method = networkUtils.declaredMethods.find { it.name.equals("bindSocketToNetwork",true) }
+        val result = method?.invoke(null, getFileDescriptor(socket))
+        Log.d(TAG, "Result bind datagram to network is " + result)
+        if (result != 0){
+            Log.d(TAG,"Error binding socket to network")
+        }
+    }
+
+    @Throws(SocketException::class)
+    private fun getFileDescriptor(socket: DatagramSocket): Int {
+        try {
+            val implField = DatagramSocket::class.java.getDeclaredField("impl")
+            implField.isAccessible = true
+
+            val implValue = implField.get(socket) as DatagramSocketImpl
+            val fdField = DatagramSocketImpl::class.java.getDeclaredField("fd")
+            fdField.isAccessible = true
+
+            val fdValue = fdField.get(implValue) as FileDescriptor
+            val descField = FileDescriptor::class.java.getDeclaredField("descriptor")
+            descField.isAccessible = true
+
+            return descField.getInt(fdValue)
+
+        } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
+            throw AssertionError(e)
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+            throw AssertionError(e)
+        }
+
     }
 
     @Throws(IllegalArgumentException::class)

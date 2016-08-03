@@ -1,8 +1,10 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.aajtech.mobile.goproshowcase.PhotosFragment">
+    tools:context="com.aajtech.mobile.goproshowcase.GoProPhotosFragment"
+    android:id="@+id/photos_frame_layout">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -25,6 +27,7 @@
                 android:text="Take Photo" />
 
             <android.support.v7.widget.AppCompatButton
+                android:id="@+id/photo_manual_listen"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:text="Listen" />

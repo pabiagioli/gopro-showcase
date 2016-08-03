@@ -13,7 +13,7 @@ import android.view.*
 import android.widget.TextView
 import com.aajtech.mobile.goproshowcase.dto.GoProStatusDTO
 
-class GoProCmdsActivity : AppCompatActivity(), GoProStatusDTOFragment.OnListFragmentInteractionListener, GoProAnalyticsFragment.OnFragmentInteractionListener, PhotosFragment.OnFragmentInteractionListener {
+class GoProCmdsActivity : AppCompatActivity(), GoProStatusDTOFragment.OnListFragmentInteractionListener, GoProAnalyticsFragment.OnFragmentInteractionListener, GoProPhotosFragment.OnFragmentInteractionListener {
 
     override fun onFragmentInteraction(uri: Uri) {
     }
@@ -125,7 +125,7 @@ class GoProCmdsActivity : AppCompatActivity(), GoProStatusDTOFragment.OnListFrag
             when (position) {
                 0 -> return GoProStatusDTOFragment()
                 1 -> return GoProAnalyticsFragment()
-                2 -> return PhotosFragment()
+                2 -> return GoProPhotosFragment()
                 else -> return PlaceholderFragment.newInstance(position + 1)
             }
         }
