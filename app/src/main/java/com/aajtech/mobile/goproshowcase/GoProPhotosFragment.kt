@@ -73,31 +73,7 @@ class GoProPhotosFragment : Fragment() {
             sr?.startListening(intent)
         }
         photo_manual_trigger.setOnClickListener {
-            thread {
-                sendWoL()
-                val primaryMode = retrofit.create(GoProPrimaryModeService::class.java)
-                var response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
-
-                if (!response.isSuccessful && response.code() == 500)
-                    response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
-
-                //assert(response.isSuccessful)
-                Log.d(this.javaClass.name,response.body().string())
-                val secondaryMode = retrofit.create(GoProSecondaryModeService::class.java)
-                val response2 = secondaryMode.setSubMode(
-                        GoProSecondaryModes.SINGLE_PHOTO.mode,
-                        GoProSecondaryModes.SINGLE_PHOTO.subMode).execute()
-                //assert(response2.isSuccessful)
-                if(response2.isSuccessful)
-                    Log.d(this.javaClass.name, response2?.body()?.string())
-
-                val trigger = retrofit.create(GoProShutterService::class.java)
-                val response3 = trigger.shutterToggle(GoProShutterModes.TRIGGER_SHUTTER.mode).execute()
-
-                //assert(response3.isSuccessful)
-                if(response3.isSuccessful)
-                    Log.d(this.javaClass.name,response3?.body()?.string())
-            }
+            thread { takeSinglePhotoRunnable.run() }
         }
     }
 
@@ -132,6 +108,39 @@ class GoProPhotosFragment : Fragment() {
     interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         fun onFragmentInteraction(uri: Uri)
+    }
+
+    val takeSinglePhotoRunnable = object : Runnable {
+        override fun run() {
+            sendWoL()
+            //val primaryMode = retrofit.create(GoProPrimaryModeService::class.java)
+            //var response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
+
+            //if (!response.isSuccessful && response.code() == 500)
+            //    response = primaryMode.setPrimaryMode(GoProPrimaryModes.PHOTO.mode).execute()
+
+            //assert(response.isSuccessful)
+            //Log.d(this.javaClass.name,response.body().string())
+            val secondaryMode = retrofit.create(GoProSecondaryModeService::class.java)
+            var response2 = secondaryMode.setSubMode(
+                    GoProSecondaryModes.SINGLE_PHOTO.mode,
+                    GoProSecondaryModes.SINGLE_PHOTO.subMode).execute()
+            //assert(response2.isSuccessful)
+            if (!response2.isSuccessful && response2.code() == 500)
+                response2 = secondaryMode.setSubMode(
+                        GoProSecondaryModes.SINGLE_PHOTO.mode,
+                        GoProSecondaryModes.SINGLE_PHOTO.subMode).execute()
+
+            if(response2.isSuccessful)
+                Log.d(this.javaClass.name, response2?.body()?.string())
+
+            val trigger = retrofit.create(GoProShutterService::class.java)
+            val response3 = trigger.shutterToggle(GoProShutterModes.TRIGGER_SHUTTER.mode).execute()
+
+            //assert(response3.isSuccessful)
+            if(response3.isSuccessful)
+                Log.d(this.javaClass.name,response3?.body()?.string())
+        }
     }
 
     val srListener = object : RecognitionListener {
@@ -177,7 +186,8 @@ class GoProPhotosFragment : Fragment() {
                 //mText.setText("results: " + String.valueOf(data.size()))
                 Snackbar.make(photos_frame_layout, "results: " + data?.size, Snackbar.LENGTH_LONG).show()
                 if (str.contains("snap", true) || str.contains("photo", true))
-                    photo_manual_trigger.performClick()
+                    thread { takeSinglePhotoRunnable.run() }
+                    //photo_manual_trigger.performClick()
             }catch (e:Exception){
                 Snackbar.make(photos_frame_layout, "hubo un error sarpado", Snackbar.LENGTH_LONG).show()
             }
