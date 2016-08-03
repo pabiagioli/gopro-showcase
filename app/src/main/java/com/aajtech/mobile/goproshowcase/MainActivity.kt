@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun initNetworkRouting(ctx: Context){
-        val conMgr = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val conMgr = ctx.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val nets = conMgr.allNetworks
         for (net in nets){
             val info = conMgr.getNetworkInfo(net)
@@ -47,6 +47,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        wifiNetwork = null
     }
 
 }

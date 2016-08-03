@@ -13,10 +13,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.aajtech.mobile.goproshowcase.dto.GoProPrimaryModes
 import com.aajtech.mobile.goproshowcase.dto.GoProSecondaryModes
 import com.aajtech.mobile.goproshowcase.dto.GoProShutterModes
-import com.aajtech.mobile.goproshowcase.service.*
+import com.aajtech.mobile.goproshowcase.service.GoProSecondaryModeService
+import com.aajtech.mobile.goproshowcase.service.GoProShutterService
+import com.aajtech.mobile.goproshowcase.service.retrofit
+import com.aajtech.mobile.goproshowcase.service.sendWoL
 import kotlinx.android.synthetic.main.fragment_photos.*
 import kotlin.concurrent.thread
 
